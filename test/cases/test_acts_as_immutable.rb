@@ -30,14 +30,17 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
   end
 
   def test_writing_attributes_without_list
-    p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
+    p = Payment2.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     assert_raises ActiveRecord::ActsAsImmutableError do
       p.customer = 'test'
     end
+
+    p.record_locked = false
+    p.customer = 'test'
   end
 
   def test_destroy
-    p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
+    p = Payment2.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     assert_raises ActiveRecord::ActsAsImmutableError do
       p.destroy
     end
@@ -45,16 +48,14 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     p.record_locked = false
     p.destroy
 
-    p = Payment.new(:customer => "Valentin", :status => "success", :amount => 5.00)
+    p = Payment2.new(:customer => "Valentin", :status => "success", :amount => 5.00)
     p.destroy
   end
   
   def test_creating_object_directly
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     
-    assert_raises ActiveRecord::ActsAsImmutableError do
-      p.amount = 10.00
-    end
+    p.amount = 10.00
     
     p.record_locked = false
     p.amount = 10.00
@@ -68,10 +69,7 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     
     assert p.save
     
-    assert_raises ActiveRecord::ActsAsImmutableError do
-      p.amount = 10.00
-    end
-    
+    p.amount = 10.00
     p.record_locked = false
     p.amount = 10.00
     assert p.save
