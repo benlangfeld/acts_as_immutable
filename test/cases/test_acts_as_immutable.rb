@@ -3,6 +3,7 @@ $:.unshift(File.dirname(__FILE__) + '/../../lib')
 
 require 'config'
 require 'acts_as_immutable'
+require 'ruby-debug'
 
 class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
   class Payment < ActiveRecord::Base
@@ -29,78 +30,62 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     end
   end
 
-  def test_writing_attributes_without_list
+  def test_is_mutable
+    p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
+    assert !p.mutable?
+    p.record_locked = false
+    assert p.mutable?
+  end
+
+  def test_is_immutable
+    p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
+    assert p.immutable?
+    p.record_locked = false
+    assert !p.immutable?
+  end
+
+  def test_writing_attributes_without_white_list
     p = Payment2.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
-    assert_raises ActiveRecord::ActsAsImmutableError do
-      p.customer = 'test'
-    end
+    p.customer = 'test'
+    assert_error_on p, :customer
 
     p.record_locked = false
-    p.customer = 'test'
+    assert_no_error_on p, :customer
+  end
+  
+  def test_writing_mutable_attributes
+    p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
+    p.status = 'fail'
+    assert_valid p
   end
 
   def test_destroy
     p = Payment2.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
-    assert_raises ActiveRecord::ActsAsImmutableError do
-      p.destroy
-    end
+    assert_valid p
+    p.destroy
+    assert_not_nil p.errors.on(:base)
+    assert_not_nil Payment2.find_by_id(p.id)
 
     p.record_locked = false
     p.destroy
+    assert_nil Payment2.find_by_id(p.id)
 
     p = Payment2.new(:customer => "Valentin", :status => "success", :amount => 5.00)
     p.destroy
   end
-  
-  def test_creating_object_directly
-    p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
-    
-    p.amount = 10.00
-    
-    p.record_locked = false
-    p.amount = 10.00
-    p.record_locked = true
-    assert p.save
-    assert_equal 10.00, p.reload.amount
+
+  private
+  def assert_error_on(object, association)
+    object.valid?
+    assert_not_nil object.errors.on(association)
   end
-  
-  def test_creating_object_in_several_steps
-    p = Payment.new(:customer => "Valentin", :status => "success", :amount => 5.00)
-    
-    assert p.save
-    
-    p.amount = 10.00
-    p.record_locked = false
-    p.amount = 10.00
-    assert p.save
-    assert_equal 10.00, p.reload.amount
+
+  def assert_no_error_on(object, association)
+    object.valid?
+    assert_nil object.errors.on(association)
   end
-  
-  def test_writing_attributes_low_level
-    p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
-    
-    p = Payment.find(p.id)
-    p.record_locked = false
-    p.amount = 10.00
-    
-    p = Payment.find(p.id)
-    p.record_locked = false
-    p[:amount] = 10.00
-    
-    p = Payment.find(p.id)
-    p.record_locked = false
-    p["amount"] = 10.00
-    
-    p = Payment.find(p.id)
-    p.record_locked = false
-    p.instance_eval do
-      self.write_attribute("amount", 10)
-    end
-    
-    p = Payment.find(p.id)
-    p.record_locked = false
-    p.instance_eval do
-      self.write_attribute(:amount, 10)
-    end
+
+  def assert_valid(object)
+    assert object.valid?, "#{object.errors.full_messages.to_sentence}"
   end
 end
