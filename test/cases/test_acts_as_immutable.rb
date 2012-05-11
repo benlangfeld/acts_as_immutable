@@ -30,6 +30,19 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     end
   end
 
+  class PaymentLockOnNew < ActiveRecord::Base
+    set_table_name :payments
+    attr_accessor :record_locked
+
+    acts_as_immutable :new_records_mutable => false do
+      !record_locked
+    end
+
+    def after_initialize
+      self.record_locked = true
+    end
+  end
+
   def test_is_mutable
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     assert !p.mutable?
@@ -72,6 +85,22 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
 
     p = Payment2.new(:customer => "Valentin", :status => "success", :amount => 5.00)
     p.destroy
+  end
+
+  def test_new_records_should_be_mutable
+    assert Payment.new.mutable?
+  end
+
+  def test_new_records_with_lock_on_new_should_not_be_mutable
+    assert !PaymentLockOnNew.new.mutable?
+    p = PaymentLockOnNew.new(:customer => "Valentin", :status => "success", :amount => 5.00)
+    assert !p.valid?
+  end
+
+  def test_new_records_with_lock_on_new_should_be_mutable_if_condition_is_met
+    p = PaymentLockOnNew.new
+    p.record_locked = false
+    assert p.mutable?
   end
 
   private

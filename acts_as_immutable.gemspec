@@ -22,5 +22,8 @@ is in a particular state (block evaluates to true).}
 
   # specify any dependencies here; for example:
   s.add_development_dependency "rake"
+  s.add_development_dependency "activerecord", '2.3.12'
+  s.add_development_dependency "sqlite3"
+  s.add_development_dependency "ruby-debug"
   # s.add_runtime_dependency "rest-client"
 end
