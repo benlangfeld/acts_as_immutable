@@ -16,8 +16,8 @@ module ActsAsImmutable
   
   module InstanceMethods
     def mutable?
-      cond = self.class.read_inheritable_attribute(:mutable_condition)
-      options = self.class.read_inheritable_attribute(:mutable_options)
+      cond = self.class.mutable_condition
+      options = self.class.mutable_options
       (options[:new_records_mutable] && new_record?) || cond && instance_eval(&cond)
     end  
 
@@ -46,19 +46,25 @@ module ActsAsImmutable
   end
 
   module ClassMethods
+    def self.extended(base)
+      base.class_attribute :mutable_attributes
+      base.class_attribute :mutable_condition
+      base.class_attribute :mutable_options
+    end
+
     def acts_as_immutable(*mutable_attributes, &condition)
       options = {:new_records_mutable => true}
       options.merge!(mutable_attributes.pop) if mutable_attributes.last.is_a?(Hash)
-      write_inheritable_attribute :mutable_attributes, mutable_attributes
-      write_inheritable_attribute :mutable_condition, condition
-      write_inheritable_attribute :mutable_options, options
+      self.mutable_attributes = mutable_attributes
+      self.mutable_condition  = condition
+      self.mutable_options    = options
 
       self.validate :validate_immutability
       self.before_destroy :validate_immutability_destroy
     end
 
     def mutable_attributes
-      read_inheritable_attribute(:mutable_attributes) || []
+      self.mutable_attributes || []
     end
   end
 end
