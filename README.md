@@ -17,27 +17,29 @@ script/plugin install git://github.com/pkieltyka/acts_as_immutable.git
 Usage examples
 --------------
 
-# Ex. 1
-# All attributes will be immutable
+Ex. 1 All attributes will be immutable
+```ruby
 class PaymentTransaction < ActiveRecord::Base
     acts_as_immutable
 end
+```
 
-
-# Ex. 2
-# All attributes will be immutable except 'paid',
-# ie. if the invoice is still outstanding
+Ex. 2
+All attributes will be immutable except 'paid',
+ie. if the invoice is still outstanding
+```ruby
 class Invoice < ActiveRecord::Base
     acts_as_immutable :paid do
         paid == false
     end
 end
+```
 
-
-# Ex. 3
-# Objects are immutable unless the subscription is
-# active or free in which case changes can be made
-# to: status, free and updated_at
+Ex. 3
+Objects are immutable unless the subscription is
+active or free in which case changes can be made
+to: status, free and updated_at
+```ruby
 class Subscription < ActiveRecord::Base
     acts_as_immutable :status, :free, :updated_at do
         free? || active?
@@ -47,7 +49,9 @@ class Subscription < ActiveRecord::Base
         status == "active"
     end
 end
+```
 
+```bash
 > sub = Subscription.new
 > sub.status = "active"
 > sub.free = false
@@ -55,7 +59,6 @@ end
 > sub.end_date = Time.now + 1.year
 > sub.save
 => true
-
 > sub.start_date = Time.now + 1.week
 => ActiveRecord::ActsAsImmutableError: start_date is an immutable attribute
 
@@ -65,12 +68,12 @@ end
 > sub.status = "cancelled"
 > sub.save
 => true
-
+```
 
 Testing
 -------
 
-Tested on Rails 2.3.2
+Tested on Rails 4.2.0
 Sorry no test suite
 
 
