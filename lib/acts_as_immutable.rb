@@ -18,7 +18,7 @@ module ActsAsImmutable
     def mutable?
       cond = self.class.mutable_condition
       options = self.class.mutable_options
-      (options[:new_records_mutable] && new_record?) || cond && instance_eval(&cond)
+      (options[:new_records_mutable] && new_record?) || (cond && instance_eval(&cond))
     end  
 
     def immutable?
