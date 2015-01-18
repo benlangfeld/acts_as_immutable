@@ -10,9 +10,9 @@ Authored by: NuLayer Inc. / www.nulayer.com
 
 Install
 -------
-
-script/plugin install git://github.com/pkieltyka/acts_as_immutable.git
-
+```ruby
+gem 'acts_as_immutable', github:'Dealermade/acts_as_immutable'
+```
 
 Usage examples
 --------------
