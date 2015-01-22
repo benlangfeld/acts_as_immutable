@@ -36,7 +36,7 @@ module ActsAsImmutable
     end
 
     def validate_immutability_destroy
-      if immutable?
+      if immutable? && !self.class.included_modules.include?(DestroyedAt)
         errors.add(:base, "Record is immutable")
         false
       else
