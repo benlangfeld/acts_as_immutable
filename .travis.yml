@@ -1,0 +1,11 @@
+language: ruby
+rvm:
+  - 2.0.0
+  - 2.1
+  - jruby-19mode
+  - rbx
+matrix:
+  allow_failures:
+    - rvm: rbx
+# use Travis containers for faster builds
+sudo: false
