@@ -7,8 +7,5 @@ rvm:
 gemfile:
   - gemfiles/active_record_32.gemfile
   - gemfiles/active_record_42.gemfile
-matrix:
-  allow_failures:
-    - rvm: rbx
 # use Travis containers for faster builds
 sudo: false
