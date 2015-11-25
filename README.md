@@ -73,8 +73,7 @@ end
 Testing
 -------
 
-Tested on Rails 4.2.0
-Sorry no test suite
+Tested on Rails 4.2.0. To run the tests, invoke `rake`.
 
 
 License (MIT)

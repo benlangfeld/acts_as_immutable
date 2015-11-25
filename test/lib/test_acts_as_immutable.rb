@@ -1,24 +1,19 @@
-$:.unshift(File.dirname(__FILE__) + '/../')
-$:.unshift(File.dirname(__FILE__) + '/../../lib')
+require 'test_helper'
 
-require 'config'
-require 'acts_as_immutable'
-require 'ruby-debug'
-
-class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
+class ActsAsImmutableUsingVirtualField < MiniTest::Test
   class Payment < ActiveRecord::Base
     attr_accessor :record_locked
     acts_as_immutable(:status, :amount) do
       !record_locked
     end
-    
+
     def after_initialize
       self.record_locked = true
     end
   end
 
   class Payment2 < ActiveRecord::Base
-    set_table_name :payments
+    self.table_name = :payments
     attr_accessor :record_locked
 
     acts_as_immutable do
@@ -31,7 +26,7 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
   end
 
   class PaymentLockOnNew < ActiveRecord::Base
-    set_table_name :payments
+    self.table_name = :payments
     attr_accessor :record_locked
 
     acts_as_immutable :new_records_mutable => false do
@@ -65,7 +60,7 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     p.record_locked = false
     assert_no_error_on p, :customer
   end
-  
+
   def test_writing_mutable_attributes
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     p.status = 'fail'
@@ -103,7 +98,8 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     assert p.mutable?
   end
 
-  private
+private
+
   def assert_error_on(object, association)
     object.valid?
     assert_not_nil object.errors.on(association)
