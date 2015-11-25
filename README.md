@@ -73,7 +73,7 @@ end
 Testing
 -------
 
-Tested on Rails 4.2.0. To run the tests, invoke `rake`.
+Tested on Rails 4.2.0. To run the tests, invoke `rake` or `guard`.
 
 
 License (MIT)
