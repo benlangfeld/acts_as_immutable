@@ -71,7 +71,7 @@ class ActsAsImmutableUsingVirtualField < MiniTest::Test
     p = Payment2.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     assert_valid p
     p.destroy
-    assert_not_nil p.errors.on(:base)
+    assert_not_nil p.errors.get(:base)
     assert_not_nil Payment2.find_by_id(p.id)
 
     p.record_locked = false
@@ -102,15 +102,20 @@ private
 
   def assert_error_on(object, association)
     object.valid?
-    assert_not_nil object.errors.on(association)
+    assert_not_nil object.errors.get(association)
   end
 
   def assert_no_error_on(object, association)
     object.valid?
-    assert_nil object.errors.on(association)
+    assert_nil object.errors.get(association)
   end
 
   def assert_valid(object)
     assert object.valid?, "#{object.errors.full_messages.to_sentence}"
+  end
+
+  def assert_not_nil(exp, msg = nil)
+    msg = message(msg) { "<#{mu_pp(exp)}> expected to not be nil" }
+    assert !exp.nil?, msg
   end
 end
