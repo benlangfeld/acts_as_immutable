@@ -13,19 +13,20 @@ module ActsAsImmutable
     base.extend ClassMethods
     base.send :include, InstanceMethods
   end
-  
+
   module InstanceMethods
     def mutable?
       cond = self.class.mutable_condition
       options = self.class.mutable_options
       (options[:new_records_mutable] && new_record?) || (cond && instance_eval(&cond))
-    end  
-
-    def immutable?
-      !mutable? 
     end
 
-    protected
+    def immutable?
+      !mutable?
+    end
+
+  protected
+
     def validate_immutability
       changed_attrs = self.changes.keys.map(&:to_sym)
       (changed_attrs - self.class.mutable_attributes).each do |attr|
@@ -40,7 +41,7 @@ module ActsAsImmutable
         errors.add(:base, "Record is immutable")
         false
       else
-        true 
+        true
       end
     end
   end

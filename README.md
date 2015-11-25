@@ -20,7 +20,7 @@ Usage examples
 Ex. 1 All attributes will be immutable
 ```ruby
 class PaymentTransaction < ActiveRecord::Base
-    acts_as_immutable
+	acts_as_immutable
 end
 ```
 
@@ -29,9 +29,9 @@ All attributes will be immutable except 'paid',
 ie. if the invoice is still outstanding
 ```ruby
 class Invoice < ActiveRecord::Base
-    acts_as_immutable :paid do
-        paid == false
-    end
+	acts_as_immutable :paid do
+		paid == false
+	end
 end
 ```
 
@@ -41,13 +41,13 @@ active or free in which case changes can be made
 to: status, free and updated_at
 ```ruby
 class Subscription < ActiveRecord::Base
-    acts_as_immutable :status, :free, :updated_at do
-        free? || active?
-    end
-        
-    def active?
-        status == "active"
-    end
+	acts_as_immutable :status, :free, :updated_at do
+		free? || active?
+	end
+
+	def active?
+		status == "active"
+	end
 end
 ```
 
