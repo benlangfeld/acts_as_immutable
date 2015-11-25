@@ -22,7 +22,6 @@ is in a particular state (block evaluates to true).}
 
   s.add_development_dependency "rake"
   s.add_development_dependency "activerecord", '4.2.0'
-  s.add_development_dependency "sqlite3"
   s.add_development_dependency "minitest"
   s.add_development_dependency "guard"
   s.add_development_dependency "guard-minitest"
