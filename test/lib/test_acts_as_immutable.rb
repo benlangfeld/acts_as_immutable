@@ -3,44 +3,53 @@ require 'test_helper'
 class ActsAsImmutableUsingVirtualField < MiniTest::Test
   class Payment < ActiveRecord::Base
     attr_accessor :record_locked
+
+    after_initialize :lock
+
     acts_as_immutable(:status, :amount) do
       !record_locked
     end
 
-    def after_initialize
+    def lock
       self.record_locked = true
     end
   end
 
   class Payment2 < ActiveRecord::Base
     self.table_name = :payments
+
     attr_accessor :record_locked
+
+    after_initialize :lock
 
     acts_as_immutable do
       !record_locked
     end
 
-    def after_initialize
+    def lock
       self.record_locked = true
     end
   end
 
   class PaymentLockOnNew < ActiveRecord::Base
     self.table_name = :payments
+
     attr_accessor :record_locked
+
+    after_initialize :lock
 
     acts_as_immutable :new_records_mutable => false do
       !record_locked
     end
 
-    def after_initialize
+    def lock
       self.record_locked = true
     end
   end
 
   def test_is_mutable
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
-    assert !p.mutable?
+    refute p.mutable?
     p.record_locked = false
     assert p.mutable?
   end
@@ -49,7 +58,7 @@ class ActsAsImmutableUsingVirtualField < MiniTest::Test
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     assert p.immutable?
     p.record_locked = false
-    assert !p.immutable?
+    refute p.immutable?
   end
 
   def test_writing_attributes_without_white_list
@@ -87,9 +96,9 @@ class ActsAsImmutableUsingVirtualField < MiniTest::Test
   end
 
   def test_new_records_with_lock_on_new_should_not_be_mutable
-    assert !PaymentLockOnNew.new.mutable?
+    refute PaymentLockOnNew.new.mutable?
     p = PaymentLockOnNew.new(:customer => "Valentin", :status => "success", :amount => 5.00)
-    assert !p.valid?
+    refute p.valid?
   end
 
   def test_new_records_with_lock_on_new_should_be_mutable_if_condition_is_met
@@ -116,6 +125,6 @@ private
 
   def assert_not_nil(exp, msg = nil)
     msg = message(msg) { "<#{mu_pp(exp)}> expected to not be nil" }
-    assert !exp.nil?, msg
+    refute exp.nil?, msg
   end
 end
