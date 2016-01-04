@@ -1,51 +1,55 @@
-$:.unshift(File.dirname(__FILE__) + '/../')
-$:.unshift(File.dirname(__FILE__) + '/../../lib')
+require 'test_helper'
 
-require 'config'
-require 'acts_as_immutable'
-require 'ruby-debug'
-
-class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
+class ActsAsImmutableUsingVirtualField < MiniTest::Test
   class Payment < ActiveRecord::Base
     attr_accessor :record_locked
+
+    after_initialize :lock
+
     acts_as_immutable(:status, :amount) do
       !record_locked
     end
-    
-    def after_initialize
+
+    def lock
       self.record_locked = true
     end
   end
 
   class Payment2 < ActiveRecord::Base
-    set_table_name :payments
+    self.table_name = :payments
+
     attr_accessor :record_locked
+
+    after_initialize :lock
 
     acts_as_immutable do
       !record_locked
     end
 
-    def after_initialize
+    def lock
       self.record_locked = true
     end
   end
 
   class PaymentLockOnNew < ActiveRecord::Base
-    set_table_name :payments
+    self.table_name = :payments
+
     attr_accessor :record_locked
+
+    after_initialize :lock
 
     acts_as_immutable :new_records_mutable => false do
       !record_locked
     end
 
-    def after_initialize
+    def lock
       self.record_locked = true
     end
   end
 
   def test_is_mutable
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
-    assert !p.mutable?
+    refute p.mutable?
     p.record_locked = false
     assert p.mutable?
   end
@@ -54,7 +58,7 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     assert p.immutable?
     p.record_locked = false
-    assert !p.immutable?
+    refute p.immutable?
   end
 
   def test_writing_attributes_without_white_list
@@ -65,7 +69,7 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     p.record_locked = false
     assert_no_error_on p, :customer
   end
-  
+
   def test_writing_mutable_attributes
     p = Payment.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     p.status = 'fail'
@@ -76,7 +80,7 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     p = Payment2.create!(:customer => "Valentin", :status => "success", :amount => 5.00)
     assert_valid p
     p.destroy
-    assert_not_nil p.errors.on(:base)
+    assert_not_nil p.errors.get(:base)
     assert_not_nil Payment2.find_by_id(p.id)
 
     p.record_locked = false
@@ -92,9 +96,9 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
   end
 
   def test_new_records_with_lock_on_new_should_not_be_mutable
-    assert !PaymentLockOnNew.new.mutable?
+    refute PaymentLockOnNew.new.mutable?
     p = PaymentLockOnNew.new(:customer => "Valentin", :status => "success", :amount => 5.00)
-    assert !p.valid?
+    refute p.valid?
   end
 
   def test_new_records_with_lock_on_new_should_be_mutable_if_condition_is_met
@@ -103,18 +107,24 @@ class ActsAsImmutableUsingVirtualField < ActiveRecord::TestCase
     assert p.mutable?
   end
 
-  private
+private
+
   def assert_error_on(object, association)
     object.valid?
-    assert_not_nil object.errors.on(association)
+    assert_not_nil object.errors.get(association)
   end
 
   def assert_no_error_on(object, association)
     object.valid?
-    assert_nil object.errors.on(association)
+    assert_nil object.errors.get(association)
   end
 
   def assert_valid(object)
     assert object.valid?, "#{object.errors.full_messages.to_sentence}"
+  end
+
+  def assert_not_nil(exp, msg = nil)
+    msg = message(msg) { "<#{mu_pp(exp)}> expected to not be nil" }
+    refute exp.nil?, msg
   end
 end

@@ -1,0 +1,11 @@
+language: ruby
+rvm:
+  - 2.0.0
+  - 2.1
+  - jruby-19mode
+  - rbx
+gemfile:
+  - gemfiles/active_record_32.gemfile
+  - gemfiles/active_record_42.gemfile
+# use Travis containers for faster builds
+sudo: false
