@@ -16,7 +16,7 @@ def make_connection(clazz, db_file)
     puts "Executing '#{sqlite_command}'"
     raise SqliteError.new("Seems that there is no sqlite3 executable available") unless system(sqlite_command)
   end
-  clazz.establish_connection(clazz.name)
+  clazz.establish_connection(clazz.name.to_sym)
 end
 
 make_connection(ActiveRecord::Base, sqlite_test_db)
