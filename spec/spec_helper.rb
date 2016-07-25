@@ -20,6 +20,7 @@
 $:.unshift(File.dirname(__FILE__))
 $:.unshift(File.join(File.dirname(__FILE__), '..'))
 
+require 'byebug'
 require 'active_record'
 require 'lib/acts_as_immutable'
 require 'support/fixtures'
