@@ -13,16 +13,16 @@ module ActsAsImmutable
     base.extend ClassMethods
     base.send :include, InstanceMethods
   end
-  
+
   module InstanceMethods
     def mutable?
       cond = self.class.mutable_condition
       options = self.class.mutable_options
       (options[:new_records_mutable] && new_record?) || (cond && instance_eval(&cond))
-    end  
+    end
 
     def immutable?
-      !mutable? 
+      !mutable?
     end
 
     protected
@@ -40,7 +40,7 @@ module ActsAsImmutable
         errors.add(:base, "Record is immutable")
         false
       else
-        true 
+        true
       end
     end
   end
@@ -53,8 +53,18 @@ module ActsAsImmutable
     end
 
     def acts_as_immutable(*mutable_attributes, &condition)
-      options = {:new_records_mutable => true}
-      options.merge!(mutable_attributes.pop) if mutable_attributes.last.is_a?(Hash)
+      if mutable_attributes.last.is_a?(Hash) && mutable_attributes.last[:if]
+        immutable_if_hook = mutable_attributes.last[:if] # lambda or symbol
+        immutable_if = immutable_if_hook
+        immutable_if = ->{ self.send immutable_if_hook } if immutable_if_hook.is_a?(Symbol)
+        condition = Proc.new do
+          !instance_exec(&immutable_if)
+        end
+      end
+
+      options = {}
+      options[:new_records_mutable] = !mutable_attributes.include?(:always)
+      options = options.merge!(mutable_attributes.pop) if mutable_attributes.last.is_a?(Hash)
       self.mutable_attributes = mutable_attributes
       self.mutable_condition  = condition
       self.mutable_options    = options
