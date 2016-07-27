@@ -1,7 +1,7 @@
 class Payment < ActiveRecord::Base
   belongs_to :account
 
-  acts_as_immutable new_records_mutable: false, if: ->{ account.read_only? }
+  acts_as_immutable :always, if: ->{ account.read_only? }
 end
 
 class Account < ActiveRecord::Base

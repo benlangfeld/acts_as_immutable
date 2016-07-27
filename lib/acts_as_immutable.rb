@@ -62,8 +62,9 @@ module ActsAsImmutable
         end
       end
 
-      options = {:new_records_mutable => true}
-      options.merge!(mutable_attributes.pop) if mutable_attributes.last.is_a?(Hash)
+      options = {}
+      options[:new_records_mutable] = !mutable_attributes.include?(:always)
+      options = options.merge!(mutable_attributes.pop) if mutable_attributes.last.is_a?(Hash)
       self.mutable_attributes = mutable_attributes
       self.mutable_condition  = condition
       self.mutable_options    = options
