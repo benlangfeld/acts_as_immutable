@@ -1,15 +1,15 @@
 class Payment < ActiveRecord::Base
   belongs_to :account
 
-  # mutable only when account is active
-  acts_as_immutable new_records_mutable: false do
-    account.active
-  end
+  acts_as_immutable new_records_mutable: false, if: ->{ account.read_only? }
 end
 
 class Account < ActiveRecord::Base
   has_many :payments
 
-  # mutable only when account is active
-  acts_as_immutable { active }
+  acts_as_immutable if: :read_only?
+
+  def read_only?
+    !active && !active_changed?
+  end
 end

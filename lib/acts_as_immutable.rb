@@ -53,6 +53,15 @@ module ActsAsImmutable
     end
 
     def acts_as_immutable(*mutable_attributes, &condition)
+      if mutable_attributes.last.is_a?(Hash) && mutable_attributes.last[:if]
+        immutable_if_hook = mutable_attributes.last[:if] # lambda or symbol
+        immutable_if = immutable_if_hook
+        immutable_if = ->{ self.send immutable_if_hook } if immutable_if_hook.is_a?(Symbol)
+        condition = Proc.new do
+          !instance_exec(&immutable_if)
+        end
+      end
+
       options = {:new_records_mutable => true}
       options.merge!(mutable_attributes.pop) if mutable_attributes.last.is_a?(Hash)
       self.mutable_attributes = mutable_attributes
